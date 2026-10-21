@@ -1,0 +1,12 @@
+# Paquete generado por web-ext
+/web-ext-artifacts/
+
+# Identificador local usado durante la publicación en AMO
+/.amo-upload-uuid
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Otros
+PORTFOLIO.md

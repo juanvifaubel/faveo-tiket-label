@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "faveo-ticket-labels",
+  "version": "1.0.0",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "faveo-ticket-labels@juanvifaubel",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "description": "Añade etiquetas personales a los tickets de Faveo Helpdesk y las muestra en la lista.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "faveo-ticket-labels",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "host_permissions": ["https://www.googleapis.com/*", "https://oauth2.googleapis.com/*"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "permissions": ["storage", "scripting"],
+  "background": {
+    "scripts": [
+      "src/shared/core.js",
+      "src/shared/content-registration.js",
+      "src/background/register-content.js",
+      "src/background/badge.js"
+    ]
+  }
+}

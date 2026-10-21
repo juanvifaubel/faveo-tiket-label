@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Configurar Google Calendar | faveo-ticket-labels</title>
+  <link rel="stylesheet" href="src/help/help.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand" aria-label="faveo-ticket-labels">
+      <img class="brand-mark" src="icons/icon-32.png" alt="" width="32" height="32">
+      <span>faveo-ticket-labels</span>
+    </div>
+    <span class="header-label">GUÍA DE CONFIGURACIÓN</span>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">GOOGLE CALENDAR · OAUTH 2.0</p>
+      <h1 id="page-title">Conecta tu calendario</h1>
+      <p class="lead">Solo necesitas esta guía si quieres el modo <strong>Crear mediante la API</strong>. Con <strong>Abrir una pestaña</strong> no hace falta configurar nada.</p>
+    </section>
+
+    <section class="summary" aria-label="Resumen">
+      <article class="summary-card">
+        <p class="note-label">QUÉ HACE LA API</p>
+        <h2>Conecta la extensión con tu calendario de citas</h2>
+        <p>Con el modo <strong>Crear mediante la API</strong>, la extensión trabaja directamente con el calendario de Google cuyo ID indiques en Preferencias:</p>
+        <ul>
+          <li><strong>Muestra la disponibilidad:</strong> las horas que chocan con otros eventos aparecen bloqueadas al elegir la franja.</li>
+          <li><strong>Crea, mueve y borra los eventos</strong> al guardar, cambiar o quitar una cita, sin que tengas que abrir Google Calendar.</li>
+          <li><strong>Recupera tus citas:</strong> la lista del popup se reconstruye desde el calendario, así que no se pierde si se borran los datos del navegador.</li>
+        </ul>
+        <p>Con el modo <strong>Abrir una pestaña</strong>, la extensión solo abre Google Calendar con la cita preparada. No consulta tu agenda, no bloquea horas ocupadas y no puede modificar ni borrar el evento después, por lo que no necesita nada de esta guía.</p>
+      </article>
+      <article class="summary-card">
+        <p class="note-label">LOS 4 DATOS QUE NECESITAS</p>
+        <h2>Del cliente OAuth y del calendario</h2>
+        <dl>
+          <dt>ID de cliente</dt>
+          <dd><code>123456789012-************************.apps.googleusercontent.com</code></dd>
+          <dt>Secreto del cliente</dt>
+          <dd><code>GOCSPX-****************************</code></dd>
+          <dt>Refresh token</dt>
+          <dd><code>1//**********************************************************</code></dd>
+          <dt>ID del calendario</dt>
+          <dd><code>abc123************************@group.calendar.google.com</code></dd>
+        </dl>
+        <p>Un valor que empieza por <code>ya29.</code> es un Access token (caduca en una hora) y <strong>no</strong> sirve. El ID del calendario se obtiene en Google Calendar (mira «Tu calendario de citas», más abajo).</p>
+      </article>
+    </section>
+
+    <p class="guide-hint">Google Cloud no muestra un token listo para copiar: la consola configura la API y el cliente OAuth, y OAuth Playground obtiene los tokens tras tu consentimiento. Los nombres coinciden con la consola en español; Playground conserva sus botones en inglés.</p>
+
+    <div class="guide-layout">
+      <section class="steps" aria-labelledby="steps-title">
+        <h2 id="steps-title">Preparar Google Cloud</h2>
+        <ol>
+          <li>
+            <h3>Crea o selecciona un proyecto</h3>
+            <p>Abre la <a href="https://console.cloud.google.com/?hl=es" target="_blank" rel="noopener noreferrer">Consola de Google Cloud</a>, inicia sesión y usa el selector de proyectos de la barra superior. Crea un proyecto o elige uno existente.</p>
+          </li>
+          <li>
+            <h3>Habilita Calendar API</h3>
+            <p>En el menú, sigue <strong>APIs y servicios → Biblioteca → Google Workspace</strong>. Busca y abre <strong>API de Calendario</strong> y pulsa <strong>Habilitar</strong>. Comprueba que el proyecto seleccionado sea el correcto.</p>
+          </li>
+          <li>
+            <h3>Configura la plataforma de autenticación</h3>
+            <p>Si la consola muestra <strong>Comenzar</strong>, inicia el asistente. Completa todos sus apartados: en <strong>Información de la app</strong>, indica <strong>Nombre de la app</strong> y <strong>Correo electrónico de asistencia al usuario</strong>; en <a href="https://console.developers.google.com/auth/audience?hl=es" target="_blank" rel="noopener noreferrer"><strong>Público</strong></a>, elige el tipo de usuario; en <strong>Información de contacto</strong>, introduce un correo de desarrollador; y en <strong>Finalizar</strong>, acepta la política y pulsa <strong>Continuar</strong> y <strong>Crear</strong>.</p>
+            <p>Después, en <a href="https://console.developers.google.com/auth/branding?hl=es" target="_blank" rel="noopener noreferrer"><strong>Información de la marca</strong></a>, revisa el nombre y el correo de asistencia. Para cuentas personales elige <strong>Externo</strong>; <strong>Interno</strong> solo sirve para cuentas de tu organización de Google Workspace.</p>
+          </li>
+          <li>
+            <h3>Añade el permiso de Calendario</h3>
+            <p>Cuando hayas terminado y creado la configuración inicial, abre <strong>Acceso a los datos → Agregar o quitar permisos</strong>.             Añade este permiso OAuth:             permite a la extensión encontrar tu calendario de citas y consultar, crear, modificar o borrar sus eventos:</p>
+                        <code>https://www.googleapis.com/auth/calendar</code>
+                                    <p><strong>No uses <code>calendar.events</code>:</strong> el permiso <code>calendar</code> es el que se ha probado con la extensión.</p>
+            <p>Si el apartado sigue bloqueado, vuelve al asistente y completa cualquier campo obligatorio marcado; guarda los cambios y vuelve a cargar la consola.</p>
+          </li>
+          <li>
+            <h3>Crea un cliente OAuth para Playground</h3>
+            <p>Ve a <strong>Plataforma de autenticación de Google → Clientes → Crear cliente</strong>. En <strong>Tipo de aplicación</strong>, selecciona <strong>Aplicación web</strong>. En <strong>URIs de redireccionamiento autorizados</strong>, añade exactamente esta dirección:</p>
+            <code>https://developers.google.com/oauthplayground</code>
+            <p>Pulsa <strong>Crear</strong>. Guarda el <strong>ID de cliente</strong> y el <strong>Secreto del cliente</strong>: identifican tu aplicación OAuth y los necesitarás tanto en <a href="https://developers.google.com/oauthplayground/" target="_blank" rel="noopener noreferrer">OAuth 2.0 Playground</a> como en las preferencias de la extensión. No compartas el secreto.</p>
+          </li>
+        </ol>
+
+        <h2 class="token-steps-title">Obtener el token en OAuth Playground</h2>
+        <ol class="token-steps" start="6">
+          <li>
+            <h3>Usa las credenciales del proyecto</h3>
+            <p>Abre <a href="https://developers.google.com/oauthplayground/" target="_blank" rel="noopener noreferrer">OAuth 2.0 Playground</a>. Pulsa el engranaje, activa <strong>Use your own OAuth credentials</strong> e introduce el ID de cliente y el secreto del paso anterior. Si aparece la opción <strong>Access type</strong>, selecciona <strong>Offline</strong> para recibir un Refresh token. Cierra el panel de ajustes.</p>
+          </li>
+          <li>
+            <h3>Solicita permiso para el calendario</h3>
+            <p>En <strong>Step 1: Select &amp; authorize APIs</strong>, escribe <code>https://www.googleapis.com/auth/calendar</code> en el campo de scopes y pulsa <strong>Authorize APIs</strong>. Inicia sesión con la cuenta propietaria del calendario y acepta el consentimiento. Si aparece «Google no ha verificado esta aplicación», pulsa <strong>Avanzado → Ir a (nombre de tu app)</strong>.</p>
+          </li>
+          <li>
+            <h3>Canjea el código y copia el token</h3>
+            <p>Cuando Playground vuelva a mostrar el código de autorización, todavía no lo copies en la extensión. En <strong>Step 2: Exchange authorization code for tokens</strong>, pulsa <strong>Exchange authorization code for tokens</strong>. Copia el <strong>Refresh token</strong> (empieza por <code>1//</code>) y hazlo en ese momento. El ID y el secreto son los del cliente que creaste en Google Cloud, no los que muestre Playground por defecto. El Access token (<code>ya29.…</code>) dura aproximadamente una hora y la extensión lo renueva sola; no lo pegues en las preferencias.</p>
+            <p>Si no aparece un <strong>Refresh token</strong>, revisa en los ajustes de Playground que el acceso sea <strong>Offline</strong>. Si ya autorizaste ese cliente, revoca su acceso en tu Cuenta de Google y repite la autorización para que Google emita uno nuevo.</p>
+            <p>En el popup, abre Preferencias, elige <strong>Crear mediante la API</strong> y pega el ID de cliente, el secreto y el Refresh token, y en <strong>Calendario de destino</strong> pega el ID del calendario. Pulsa <strong>Guardar preferencias</strong>. No compartas el Refresh token: permite obtener nuevos Access tokens en nombre de tu cuenta.</p>
+            <p>Si al abrir el popup aparece «The provided client secret is invalid», el secreto no corresponde al ID de cliente (suele ser un <code>ya29.…</code> o un secreto de otro cliente). Si aparece <code>invalid_grant</code>, el Refresh token es de otro cliente o está caducado: repite este paso con tu cliente.</p>
+          </li>
+        </ol>
+      </section>
+
+      <aside class="notes" aria-label="Notas importantes">
+        <section class="note note-calendar">
+          <p class="note-label">DESTINO DE LOS EVENTOS</p>
+          <h2>Tu calendario de citas</h2>
+          <p>En modo API la extensión usa el calendario cuyo ID indiques en <strong>Preferencias → Calendario de destino</strong> para leer la disponibilidad y para crear, mover y borrar eventos. Si el ID no es válido o no tienes permiso de escritura, mostrará un error.</p>
+          <p>Para obtener el ID (con la misma cuenta de Google que autorizaste en Playground):</p>
+          <ol>
+            <li>Abre <a href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">Google Calendar</a> (créalo antes con <strong>Otros calendarios → + → Crear un calendario</strong> si no existe).</li>
+            <li>Pulsa los tres puntos junto al calendario y elige <strong>Configuración y uso compartido</strong>.</li>
+            <li>En <strong>Integrar el calendario</strong>, copia el <strong>ID del calendario</strong> (acaba en <code>@group.calendar.google.com</code>; en tu calendario principal es tu correo) y pégalo en Preferencias.</li>
+          </ol>
+          <p>La descripción de cada evento incluye la línea <code>Ticket: #120</code> y un enlace al ticket (<code>{URL de Faveo}{ruta del ticket}</code>, configurable en Preferencias; por defecto <code>/thread/120</code>). Con ella la extensión reconstruye la lista de citas del popup a partir del calendario (próximos 90 días); la copia local solo se usa si no se puede leer.</p>
+          <p>Los eventos creados antes en otro calendario no se mueven: bórralos a mano y vuelve a guardar la cita.</p>
+        </section>
+      </aside>
+    </div>
+
+    <section class="official-links" aria-labelledby="official-links-title">
+      <h2 id="official-links-title">Documentación oficial</h2>
+      <a href="https://developers.google.com/workspace/guides/enable-apis?hl=es" target="_blank" rel="noopener noreferrer">Habilitar APIs de Google Workspace</a>
+      <a href="https://developers.google.com/workspace/guides/configure-oauth-consent?hl=es" target="_blank" rel="noopener noreferrer">Configurar consentimiento y permisos OAuth</a>
+      <a href="https://developers.google.com/workspace/guides/create-credentials?hl=es" target="_blank" rel="noopener noreferrer">Crear credenciales</a>
+      <a href="https://developers.google.com/identity/protocols/oauth2/web-server?hl=es" target="_blank" rel="noopener noreferrer">Flujo OAuth y renovación de tokens</a>
+      <a href="https://developers.google.com/calendar/api/v3/reference/events/insert?hl=es" target="_blank" rel="noopener noreferrer">API de Calendario: insertar eventos</a>
+      <a href="https://support.google.com/calendar/answer/37095?hl=es" target="_blank" rel="noopener noreferrer">Ayuda de Google Calendar: crear un calendario</a>
+    </section>
+  </main>
+
+  <footer>Guía para configurar la integración opcional con Google Calendar.</footer>
+</body>
+</html>

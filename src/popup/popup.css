@@ -1,0 +1,535 @@
+/* ==========================================================================
+   Popup de la extensión
+   Secciones: base · cabecera · formulario · selector de fecha ·
+   selector de hora · botones y estados · lista de citas
+   ========================================================================== */
+
+
+/* ---------- Base ---------- */
+
+:root {
+  color-scheme: light;
+  --ink: #17242d;
+  --muted: #6d7c85;
+  --line: #d9e4e8;
+  --surface: #f5f8f7;
+  --accent: #1266a3;
+  --accent-dark: #0c4d7c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: 14px system-ui, sans-serif;
+}
+
+main {
+  padding: 22px;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+h1 {
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+h2 {
+  font-size: 15px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+
+/* ---------- Cabecera ---------- */
+
+header,
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header {
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.icon-button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.icon-button svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+
+/* ---------- Formulario y campos ---------- */
+
+form {
+  margin: 24px 0 25px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+label {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+label+input {
+  margin-bottom: 14px;
+}
+
+input {
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--ink);
+  font: inherit;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #dceefa;
+}
+
+#ticket-number:read-only {
+  background: #edf2f0;
+  color: var(--muted);
+}
+
+/* Botón principal de guardar */
+form button {
+  width: 100%;
+  margin-top: 2px;
+  padding: 10px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font: 700 13px system-ui, sans-serif;
+}
+
+form button:hover {
+  background: var(--accent-dark);
+}
+
+/* Botón secundario para cancelar la edición de una cita */
+form button.cancel-edit {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--accent);
+}
+
+form button.cancel-edit:hover {
+  border-color: var(--accent);
+  background: #fff;
+}
+
+#status {
+  min-height: 16px;
+  margin: 9px 0 0;
+  font-size: 12px;
+}
+
+.success {
+  color: #187044;
+}
+
+.error {
+  color: #b33b3b;
+}
+
+
+/* ---------- Selector de fecha: botones y calendario ---------- */
+
+.date-actions {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.date-actions button {
+  display: flex;
+  width: auto;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  padding: 9px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  font: 700 12px system-ui, sans-serif;
+}
+
+.date-actions button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.date-actions .calendar-button {
+  justify-content: flex-start;
+}
+
+.calendar-button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-button svg,
+.calendar-nav svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.calendar-panel {
+  margin: 0 0 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.calendar-header h2 {
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+/* Botones de mes anterior y siguiente */
+.calendar-panel .calendar-nav {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  margin: 0;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* Cabecera de días de la semana y rejilla de días (7 columnas) */
+.calendar-weekdays,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+  text-align: center;
+}
+
+.calendar-weekdays {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.calendar-empty-day {
+  aspect-ratio: 1;
+}
+
+.calendar-panel .calendar-day {
+  width: 100%;
+  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font: 12px system-ui, sans-serif;
+}
+
+.calendar-panel .calendar-day:hover:not(:disabled) {
+  background: #e7f1f4;
+  color: var(--ink);
+}
+
+.calendar-panel .calendar-day.is-today {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.calendar-panel .calendar-day.is-selected {
+  background: var(--accent);
+  color: #fff;
+}
+
+.calendar-panel .calendar-day:disabled {
+  background: transparent;
+  color: #b5c0c2;
+  cursor: not-allowed;
+}
+
+
+/* ---------- Selector de hora ---------- */
+
+.slot-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 2px 0 7px;
+}
+
+.slot-heading label {
+  margin: 0;
+}
+
+/* Selector de duración */
+.slot-heading select {
+  width: auto;
+  min-width: 88px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--ink);
+  font: 12px system-ui, sans-serif;
+}
+
+.availability-status {
+  min-height: 15px;
+  margin: 0 0 7px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.time-slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  max-height: 150px;
+  overflow-y: auto;
+  margin: 0 0 12px;
+}
+
+/* Hora libre (estado por defecto) */
+.time-slots .time-slot {
+  width: auto;
+  min-width: 0;
+  min-height: 31px;
+  margin: 0;
+  padding: 5px 2px;
+  border: 1px solid #9bc9bd;
+  border-radius: 4px;
+  background: #f1faf5;
+  color: #145d3b;
+  cursor: pointer;
+  font: 700 11px system-ui, sans-serif;
+}
+
+.time-slots .time-slot:hover:not(:disabled) {
+  border-color: #187044;
+  background: #dff3e8;
+  color: #145d3b;
+}
+
+.time-slots .time-slot.is-selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Hora ocupada por otro evento */
+.time-slots .time-slot.is-busy {
+  border-color: #e0c1bd;
+  background: #f5e9e7;
+  color: #9b4d43;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* Hora ya pasada */
+.time-slots .time-slot.is-past {
+  border-color: #e1e5e4;
+  background: #f0f2f1;
+  color: #9aa6a5;
+  cursor: not-allowed;
+}
+
+
+/* ---------- Lista de citas ---------- */
+
+.section-title {
+  gap: 10px;
+}
+
+.section-title h2 {
+  margin-right: auto;
+}
+
+.section-title .hide-past {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.section-title .hide-past input {
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font: 700 12px system-ui, sans-serif;
+}
+
+#label-list {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.label-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.label-item div {
+  min-width: 0;
+}
+
+.label-item strong,
+.label-item span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.label-item strong {
+  font-size: 12px;
+}
+
+.label-item span,
+.label-item small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.label-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.edit-button,
+.remove-button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: 700 11px system-ui, sans-serif;
+}
+
+.edit-button {
+  color: var(--accent);
+}
+
+.remove-button {
+  color: #b33b3b;
+}
+
+#empty-state {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+
+/* ---------- Accesibilidad: foco visible con teclado ---------- */
+
+.icon-button:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

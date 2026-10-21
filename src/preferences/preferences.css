@@ -1,0 +1,358 @@
+/* ==========================================================================
+   Página de preferencias
+   Secciones: base · cabecera · introducción · formulario ·
+   modo de conexión · credenciales · botón y estados · móvil
+   ========================================================================== */
+
+
+/* ---------- Base ---------- */
+
+:root {
+  color-scheme: light;
+  --ink: #182b35;
+  --muted: #5d727b;
+  --line: #d5e0e2;
+  --canvas: #f4f8f6;
+  --paper: #fff;
+  --teal: #087e78;
+  --teal-dark: #075c58;
+  --mint: #e4f3eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font: 16px/1.55 system-ui, sans-serif;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+
+/* ---------- Cabecera ---------- */
+
+.site-header {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(24px, calc((100vw - 820px) / 2));
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.brand-mark {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+}
+
+.help-link {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--teal-dark);
+}
+
+.help-link:hover {
+  border-color: var(--teal);
+  background: var(--mint);
+}
+
+.help-link svg,
+.secure-mark svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.help-link:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+
+/* ---------- Introducción ---------- */
+
+main {
+  width: min(100% - 40px, 820px);
+  margin: 0 auto;
+  padding: 48px 0 56px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--teal-dark);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1px;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 8px;
+  font-size: 36px;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.intro {
+  margin-bottom: 28px;
+}
+
+.intro>p:last-child {
+  max-width: 620px;
+  margin: 0;
+  color: var(--muted);
+}
+
+/* ---------- Formulario ---------- */
+
+form {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--paper);
+}
+
+
+/* ---------- Modo de conexión (API o pestaña) ---------- */
+
+.option-group {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.option-group legend {
+  margin-bottom: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mode-option {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: start;
+  gap: 11px;
+  margin: 0;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.mode-option.is-selected {
+  border-color: var(--teal);
+  background: #edf6f1;
+  box-shadow: inset 3px 0 var(--teal);
+}
+
+.mode-option input {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--teal);
+}
+
+.mode-option strong,
+.mode-option small {
+  display: block;
+}
+
+.mode-option strong {
+  font-size: 14px;
+}
+
+.mode-option small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* ---------- Credenciales y datos de conexión ---------- */
+
+.credentials {
+  padding: 18px;
+  border: 1px solid #8dc7a6;
+  border-radius: 6px;
+  background: var(--mint);
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+.credentials.is-disabled {
+  border-color: var(--line);
+  background: #f1f3f3;
+  opacity: .62;
+}
+
+.credentials-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.credentials-heading .eyebrow {
+  margin-bottom: 3px;
+}
+
+.credentials-heading h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.secure-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 5px;
+  background: #fff;
+  color: var(--teal-dark);
+}
+
+.credentials label {
+  display: block;
+  margin: 0 0 6px;
+  color: #145d3b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.credentials input {
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 11px 12px;
+  border: 1px solid #74b58f;
+  border-radius: 5px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+.credentials input:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.credentials input:disabled {
+  background: #e8ebeb;
+  cursor: not-allowed;
+}
+
+.credentials.is-disabled label,
+.credentials.is-disabled .credential-hint {
+  color: var(--muted);
+}
+
+.credential-hint {
+  margin: 0;
+  color: #426353;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* ---------- Botón de guardar y mensajes de estado ---------- */
+
+.credential-hint + .credential-hint {
+  margin-top: 8px;
+}
+
+.save-button {
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--teal);
+  color: #fff;
+  cursor: pointer;
+  font: 700 14px system-ui, sans-serif;
+}
+
+.save-button:hover {
+  background: var(--teal-dark);
+}
+
+.save-button:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+#settings-status {
+  min-height: 18px;
+  margin: -10px 0 0;
+  font-size: 13px;
+}
+
+.success {
+  color: #187044;
+}
+
+.error {
+  color: #b33b3b;
+}
+
+/* ---------- Pantallas estrechas ---------- */
+
+@media (max-width: 560px) {
+  .site-header {
+    min-height: 56px;
+    padding: 0 18px;
+  }
+
+  main {
+    width: min(100% - 28px, 820px);
+    padding: 32px 0 40px;
+  }
+
+  h1 {
+    font-size: 30px;
+  }
+
+  form {
+    padding: 15px;
+  }
+
+  .credentials {
+    padding: 14px;
+  }
+}

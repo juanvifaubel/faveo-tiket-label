@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="faveo-ticket-labels">
+  <rect width="120" height="120" rx="26" fill="#087e78"/>
+  <rect x="24" y="28" width="72" height="68" rx="9" fill="#ffffff"/>
+  <path d="M24 37a9 9 0 0 1 9-9h54a9 9 0 0 1 9 9v13H24z" fill="#075c58"/>
+  <rect x="39" y="19" width="8" height="19" rx="4" fill="#e4f3eb"/>
+  <rect x="73" y="19" width="8" height="19" rx="4" fill="#e4f3eb"/>
+  <path d="M44 74l11 11 22-24" fill="none" stroke="#087e78" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

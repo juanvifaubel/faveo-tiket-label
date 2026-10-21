@@ -1,0 +1,462 @@
+/* ==========================================================================
+   Página de ayuda
+   Secciones: base · cabecera · introducción · resumen · pasos ·
+   notas laterales · enlaces oficiales · pie · adaptación a pantallas
+   ========================================================================== */
+
+
+/* ---------- Base ---------- */
+
+:root {
+  color-scheme: light;
+  --ink: #182b35;
+  --muted: #5d727b;
+  --line: #d5e0e2;
+  --canvas: #f4f8f6;
+  --paper: #fff;
+  --teal: #087e78;
+  --teal-dark: #075c58;
+  --green-wash: #e4f3eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font: 16px/1.6 system-ui, sans-serif;
+}
+
+a {
+  color: var(--teal-dark);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--teal);
+}
+
+
+/* ---------- Cabecera ---------- */
+
+.site-header {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 max(24px, calc((100vw - 1040px) / 2));
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+}
+
+.header-label,
+.eyebrow,
+.note-label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1px;
+}
+
+/* ---------- Introducción ---------- */
+
+main {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 50px 24px 64px;
+}
+
+.intro {
+  max-width: 720px;
+  margin-bottom: 36px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--teal-dark);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 650px;
+  margin-bottom: 12px;
+  font-size: 42px;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.intro .lead {
+  max-width: 620px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+}
+
+/* ---------- Tarjetas de resumen ---------- */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.summary-card h2 {
+  margin-bottom: 10px;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.summary-card p:not(.note-label) {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.summary-card p:last-child {
+  margin-bottom: 0;
+}
+
+.summary-card dl {
+  margin: 0 0 10px;
+}
+
+.summary-card dt {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summary-card dd {
+  margin: 0;
+}
+
+.summary-card ul {
+  margin: 0 0 10px;
+  padding-left: 19px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.summary-card li+li {
+  margin-top: 6px;
+}
+
+.summary-card p code {
+  display: inline;
+  margin: 0;
+  padding: 0 3px;
+  border: 0;
+  background: var(--green-wash);
+}
+
+/* ---------- Guía: aviso y distribución en dos columnas ---------- */
+
+.guide-hint {
+  margin: 0 0 32px;
+  padding: 12px 15px;
+  border-left: 3px solid var(--teal);
+  background: var(--green-wash);
+  color: #31534d;
+  font-size: 13px;
+}
+
+.guide-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(240px, .8fr);
+  align-items: start;
+  gap: 48px;
+}
+
+/* ---------- Pasos numerados ---------- */
+
+.steps h2 {
+  margin-bottom: 8px;
+  font-size: 21px;
+}
+
+.steps .token-steps-title {
+  margin-top: 34px;
+}
+
+.steps ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: guide-step;
+}
+
+.steps ol.token-steps {
+  counter-reset: guide-step 5;
+}
+
+.steps li {
+  position: relative;
+  margin: 0;
+  padding: 21px 0 20px 48px;
+  border-bottom: 1px solid var(--line);
+  counter-increment: guide-step;
+}
+
+.steps li::before {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid #9acbc2;
+  border-radius: 50%;
+  background: var(--green-wash);
+  color: var(--teal-dark);
+  content: counter(guide-step);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.steps h3 {
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.steps li p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Bloques de código (en los pasos son un bloque; en tarjetas y notas, en línea) */
+code {
+  display: block;
+  overflow-wrap: anywhere;
+  margin-top: 9px;
+  padding: 9px 11px;
+  border-left: 3px solid var(--teal);
+  background: var(--paper);
+  color: #145d3b;
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+/* ---------- Notas laterales (fijas al hacer scroll en escritorio) ---------- */
+
+.notes {
+  position: sticky;
+  top: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.note {
+  padding: 18px;
+  border-radius: 6px;
+}
+
+.note-calendar {
+  background: var(--green-wash);
+}
+
+.note-label {
+  margin-bottom: 9px;
+}
+
+.note h2 {
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+
+.note p:not(.note-label) {
+  margin-bottom: 9px;
+  color: #425a60;
+  font-size: 13px;
+}
+
+.note p:last-child {
+  margin-bottom: 0;
+}
+
+.note ol {
+  margin: 0 0 10px;
+  padding-left: 19px;
+  color: #425a60;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.note li+li {
+  margin-top: 4px;
+}
+
+.note code {
+  display: inline;
+  margin: 0;
+  padding: 0 3px;
+  border: 0;
+  background: rgb(255 255 255 / 65%);
+  font-size: 11px;
+}
+
+/* ---------- Enlaces oficiales y pie ---------- */
+
+.official-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 24px;
+  margin-top: 42px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.official-links h2 {
+  grid-column: 1 / -1;
+  margin-bottom: 3px;
+  font-size: 18px;
+}
+
+.official-links a {
+  font-size: 13px;
+}
+
+footer {
+  padding: 18px 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  text-align: center;
+  font-size: 12px;
+}
+
+/* ---------- Adaptación a pantallas pequeñas ---------- */
+
+@media (max-width: 900px) {
+  main {
+    padding-top: 38px;
+  }
+
+  .guide-layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .notes {
+    position: static;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    align-items: start;
+  }
+
+  .official-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .site-header {
+    min-height: 56px;
+    padding: 0 18px;
+  }
+
+  .header-label {
+    font-size: 9px;
+    text-align: right;
+  }
+
+  main {
+    padding: 28px 18px 46px;
+  }
+
+  h1 {
+    font-size: 30px;
+  }
+
+  .intro {
+    margin-bottom: 22px;
+  }
+
+  .intro .lead {
+    font-size: 15px;
+  }
+
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-card {
+    padding: 16px;
+  }
+
+  .steps li {
+    padding-left: 42px;
+  }
+
+  .notes {
+    grid-template-columns: 1fr;
+  }
+
+  .official-links {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    margin-top: 30px;
+  }
+}
+
+/* ---------- Animación de entrada (solo si el usuario no la reduce) ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+
+  .intro,
+  .guide-layout {
+    animation: reveal .35s ease-out both;
+  }
+
+  .guide-layout {
+    animation-delay: 70ms;
+  }
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
