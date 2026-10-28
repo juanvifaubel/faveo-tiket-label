@@ -4,10 +4,13 @@
   const CalendarApi = extension.CalendarApi;
 
   function create(elements, options) {
-    let selectedDateKey = Core.toDateKey(new Date());
+    let selectedDateKey = Core.toDateKey(CalendarApi.getNow());
     let selectedTime = '';
-    let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let calendarMonth = new Date(CalendarApi.getNow().getFullYear(), CalendarApi.getNow().getMonth(), 1);
     let requestId = 0;
+    // Últimos eventos leídos del calendario para el día mostrado: permiten repintar al instante tras una acción local.
+    let cachedEvents = null;
+    let cachedDateKey = '';
 
     function updateDateLabel() {
       elements.selectedDate.textContent = new Intl.DateTimeFormat('es-ES', {
@@ -23,6 +26,8 @@
       selectedTime = '';
       calendarMonth = Core.parseDateKey(dateKey);
       calendarMonth.setDate(1);
+      cachedEvents = null;
+      elements.timeSlots.replaceChildren();
       elements.calendarPanel.hidden = true;
       elements.calendarToggle.setAttribute('aria-expanded', 'false');
       updateDateLabel();
@@ -41,7 +46,7 @@
       const month = calendarMonth.getMonth();
       const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const todayKey = Core.toDateKey(new Date());
+      const todayKey = Core.toDateKey(CalendarApi.getNow());
 
       for (let index = 0; index < firstWeekday; index += 1) {
         const emptyDay = document.createElement('span');
@@ -76,79 +81,119 @@
       return Number(elements.duration.value);
     }
 
-    function renderSlots(events, currentRequestId) {
+    // Franjas cada 15 min dentro de los rangos de trabajo del día. Al editar, se conserva la hora ya asignada aunque quede fuera.
+    function getSlotMinutes(day, durationMinutes) {
+      const minutes = new Set();
+      Core.getWorkIntervals(options.getCalendarSettings().workRanges, day).forEach(interval => {
+        for (let minute = interval.start; minute + durationMinutes <= interval.end; minute += 15) minutes.add(minute);
+      });
+      const kept = options.getExcludedAppointmentId() ? Core.timeToMinutes(selectedTime) : NaN;
+      if (!Number.isNaN(kept)) minutes.add(kept);
+      return [...minutes].sort((first, second) => first - second);
+    }
+
+    // Actualiza los botones existentes en vez de recrearlos, para que no se note el repintado.
+    function renderSlots(events) {
       const durationMinutes = getDurationMinutes();
       const day = Core.parseDateKey(selectedDateKey);
       const excludedEventId = options.getExcludedEventId();
-      const now = Date.now();
-      elements.timeSlots.replaceChildren();
+      const now = CalendarApi.getNow().getTime();
+      const existing = new Map([...elements.timeSlots.querySelectorAll('.time-slot')].map(button => [button.dataset.time, button]));
+      const buttons = [];
+      const localAppointments = options.getLocalAppointments(selectedDateKey)
+        .filter(appointment => appointment.id !== options.getExcludedAppointmentId())
+        .map(appointment => ({
+          id: appointment.id,
+          start: { dateTime: appointment.appointmentAt },
+          end: { dateTime: new Date(new Date(appointment.appointmentAt).getTime() + appointment.durationMinutes * 60000).toISOString() }
+        }));
 
-      for (let minute = 8 * 60; minute + durationMinutes <= 15 * 60; minute += 15) {
+      const slotMinutes = getSlotMinutes(day, durationMinutes);
+      for (const minute of slotMinutes) {
         const hour = Math.floor(minute / 60);
         const minutePart = minute % 60;
         const time = `${String(hour).padStart(2, '0')}:${String(minutePart).padStart(2, '0')}`;
         const start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, minutePart);
         const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
-        const busy = CalendarApi.hasOverlap(events, start, end, excludedEventId);
+        const busy = CalendarApi.hasOverlap([...events, ...localAppointments], start, end, excludedEventId);
         const past = start.getTime() <= now;
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'time-slot';
-        button.textContent = time;
-        button.disabled = busy || past;
-        button.setAttribute('aria-pressed', String(time === selectedTime));
-
-        if (busy) {
-          button.classList.add('is-busy');
-          button.title = 'Ya hay un evento en este intervalo';
-          button.setAttribute('aria-label', `${time}, ocupado`);
-        } else if (past) {
-          button.classList.add('is-past');
-          button.title = 'Esta hora ya ha pasado';
-        } else {
-          button.classList.toggle('is-selected', time === selectedTime);
-          button.addEventListener('click', () => {
-            if (currentRequestId !== requestId) return;
-            selectedTime = time;
-            elements.timeSlots.querySelectorAll('.time-slot').forEach(slot => {
-              const selected = slot === button;
-              slot.classList.toggle('is-selected', selected);
-              slot.setAttribute('aria-pressed', String(selected));
-            });
-          });
+        let button = existing.get(time);
+        if (!button) {
+          button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'time-slot';
+          button.textContent = time;
+          button.dataset.time = time;
         }
-        elements.timeSlots.append(button);
+        button.disabled = busy || past;
+        button.classList.toggle('is-busy', busy);
+        button.classList.toggle('is-past', !busy && past);
+        button.classList.toggle('is-selected', !busy && !past && time === selectedTime);
+        button.setAttribute('aria-pressed', String(!busy && !past && time === selectedTime));
+        if (busy) {
+          button.title = 'Ya hay una cita o evento en este intervalo';
+          button.setAttribute('aria-label', `${time}, ocupado`);
+        } else {
+          button.title = past ? 'Esta hora ya ha pasado' : '';
+          button.removeAttribute('aria-label');
+        }
+        buttons.push(button);
       }
+      elements.timeSlots.replaceChildren(...buttons);
 
-      elements.availabilityStatus.textContent = events.length
+      elements.availabilityStatus.textContent = !slotMinutes.length
+        ? 'Este día no tiene horario de trabajo para esa duración. Puedes cambiarlo en Preferencias → Horario.'
+        : events.length || localAppointments.length
         ? 'Las franjas ocupadas aparecen deshabilitadas.'
         : 'No hay eventos en esta fecha. Selecciona una franja.';
+      const selectedSlot = [...elements.timeSlots.querySelectorAll('.time-slot')]
+        .find(button => button.textContent === selectedTime);
+      if (selectedTime && (!selectedSlot || selectedSlot.disabled)) {
+        selectedTime = '';
+        elements.timeSlots.querySelectorAll('.time-slot').forEach(slot => {
+          slot.classList.remove('is-selected');
+          slot.setAttribute('aria-pressed', 'false');
+        });
+      }
     }
 
     async function refreshAvailability() {
       const currentRequestId = ++requestId;
-      elements.timeSlots.replaceChildren();
       const settings = options.getCalendarSettings();
       if (settings.mode !== 'api') {
-        renderSlots([], currentRequestId);
+        renderSlots([]);
         elements.availabilityStatus.textContent = 'Modo pestaña: no se consulta el calendario, así que no se marcan horas ocupadas.';
         return;
       }
       if (!Core.hasApiConfig(settings)) {
+        elements.timeSlots.replaceChildren();
         elements.availabilityStatus.textContent = 'Faltan las credenciales o el ID del calendario, o las credenciales están bloqueadas. Revisa Preferencias o desbloquéalas arriba.';
         return;
       }
 
-      elements.availabilityStatus.textContent = 'Consultando el calendario…';
+      const dateKey = selectedDateKey;
+      // Repinta al momento con lo ya conocido (incluye los cambios locales) y reconcilia después con el calendario.
+      if (cachedEvents && cachedDateKey === dateKey) renderSlots(cachedEvents);
+      else if (!elements.timeSlots.children.length) elements.availabilityStatus.textContent = 'Consultando el calendario…';
       try {
-        const events = await CalendarApi.listEventsForDay(settings, selectedDateKey);
+        const events = await CalendarApi.listEventsForDay(settings, dateKey);
         if (currentRequestId !== requestId) return;
-        renderSlots(events, currentRequestId);
+        cachedEvents = events;
+        cachedDateKey = dateKey;
+        renderSlots(events);
       } catch (error) {
         if (currentRequestId !== requestId) return;
         selectedTime = '';
+        elements.timeSlots.replaceChildren();
         elements.availabilityStatus.textContent = `No se pudo comprobar la disponibilidad. No se permite reservar sin verificar: ${error.message}`;
       }
+    }
+
+    // Tras borrar o mover una cita, descarta sus eventos de la caché para que su franja se libere sin esperar a la red.
+    function releaseEvents(eventIds, { refresh = true } = {}) {
+      const ids = new Set(eventIds.filter(Boolean));
+      if (cachedEvents && ids.size) cachedEvents = cachedEvents.filter(event => !ids.has(event.id));
+      return refresh ? refreshAvailability() : Promise.resolve();
     }
 
     async function confirmAvailable() {
@@ -167,7 +212,18 @@
       const date = Core.parseDateKey(dateKey);
       const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute);
       const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
-      if (start.getTime() <= Date.now()) throw new Error('No se pueden agendar franjas que ya han pasado.');
+      if (start.getTime() <= CalendarApi.getNow().getTime()) throw new Error('No se pueden agendar franjas que ya han pasado.');
+      const excludedAppointmentId = options.getExcludedAppointmentId();
+      const localEvents = options.getLocalAppointments(dateKey)
+        .filter(appointment => appointment.id !== excludedAppointmentId)
+        .map(appointment => ({
+          id: appointment.id,
+          start: { dateTime: appointment.appointmentAt },
+          end: { dateTime: new Date(new Date(appointment.appointmentAt).getTime() + appointment.durationMinutes * 60000).toISOString() }
+        }));
+      if (CalendarApi.hasOverlap(localEvents, start, end)) {
+        throw new Error('Esa franja ya está reservada por otra cita guardada localmente.');
+      }
       if (!checkCalendar) return { appointmentAt, durationMinutes };
 
       const events = await CalendarApi.listEventsForDay(settings, dateKey);
@@ -183,20 +239,42 @@
       return { appointmentAt, durationMinutes };
     }
 
+    // Rellena el selector con las duraciones configuradas. Si se edita una cita cuya duración ya no está en la lista,
+    // se añade solo para esa edición, así que no se altera la cita guardada ni su evento del calendario.
+    function renderDurationOptions(selected, keepMissing) {
+      const durations = [...options.getCalendarSettings().durations];
+      const wanted = Number(selected);
+      if (keepMissing && wanted && !durations.includes(wanted)) {
+        durations.push(wanted);
+        durations.sort((first, second) => first - second);
+      }
+      elements.duration.replaceChildren(...durations.map((minutes, index) => {
+        const option = new Option(Core.formatDuration(minutes), String(minutes), index === 0, false);
+        if (!options.getCalendarSettings().durations.includes(minutes)) option.textContent += ' (ya no disponible)';
+        return option;
+      }));
+      elements.duration.value = durations.includes(wanted) ? String(wanted) : String(durations[0]);
+    }
+
+    function refreshDurations() {
+      renderDurationOptions(elements.duration.value, false);
+      void refreshAvailability();
+    }
+
     function setAppointment(value, durationMinutes = 15) {
       const appointment = new Date(value);
       if (Number.isNaN(appointment.getTime())) return;
       selectedDateKey = Core.toDateKey(appointment);
       selectedTime = `${String(appointment.getHours()).padStart(2, '0')}:${String(appointment.getMinutes()).padStart(2, '0')}`;
       calendarMonth = new Date(appointment.getFullYear(), appointment.getMonth(), 1);
-      elements.duration.value = String(durationMinutes);
+      renderDurationOptions(String(durationMinutes), true);
       renderCalendar();
       updateDateLabel();
       void refreshAvailability();
     }
 
     function bind() {
-      elements.todayButton.addEventListener('click', () => setDate(Core.toDateKey(new Date())));
+      elements.todayButton.addEventListener('click', () => setDate(Core.toDateKey(CalendarApi.getNow())));
       elements.calendarToggle.addEventListener('click', () => {
         const willOpen = elements.calendarPanel.hidden;
         elements.calendarPanel.hidden = !willOpen;
@@ -212,12 +290,25 @@
         renderCalendar();
       });
       elements.duration.addEventListener('change', () => {
-        selectedTime = '';
         void refreshAvailability();
+      });
+      elements.timeSlots.addEventListener('click', event => {
+        const button = event.target.closest('.time-slot');
+        if (!button || button.disabled) return;
+        selectedTime = button.dataset.time;
+        elements.timeSlots.querySelectorAll('.time-slot').forEach(slot => {
+          const selected = slot === button;
+          slot.classList.toggle('is-selected', selected);
+          slot.setAttribute('aria-pressed', String(selected));
+        });
       });
     }
 
     function init() {
+      selectedDateKey = Core.toDateKey(CalendarApi.getNow());
+      const now = CalendarApi.getNow();
+      calendarMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      renderDurationOptions('', false);
       renderCalendar();
       updateDateLabel();
       bind();
@@ -236,7 +327,9 @@
       getDurationMinutes,
       confirmAvailable,
       clearSelectedTime,
-      refreshAvailability
+      refreshDurations,
+      refreshAvailability,
+      releaseEvents
     });
   }
 

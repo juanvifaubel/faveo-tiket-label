@@ -66,6 +66,28 @@ header {
   gap: 12px;
 }
 
+#app-view header {
+  justify-content: flex-start;
+}
+
+#app-view header>div {
+  margin-right: auto;
+}
+
+#logout-button {
+  width: auto;
+  margin: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #fff;
+}
+
+#logout-button:hover {
+  border-color: var(--accent);
+  background: #eef6fb;
+}
+
 .eyebrow {
   margin: 0 0 4px;
   color: var(--accent);
@@ -471,6 +493,11 @@ form button.cancel-edit:hover {
   border: 1px solid var(--line);
   border-radius: 6px;
   background: #fff;
+}
+
+.label-item small {
+  display: block;
+  line-height: 1.45;
 }
 
 .label-item div {

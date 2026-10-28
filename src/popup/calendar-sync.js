@@ -30,7 +30,10 @@
 
     remoteAppointments.forEach(({ ticketNumber, ...remote }) => {
       const local = localByEventId.get(remote.calendarEventId);
-      add(ticketNumber, { ...local, ...remote, id: local?.id || remote.calendarEventId });
+      const appointment = local?.syncState === 'pending'
+        ? { ...remote, ...local, id: local.id }
+        : { ...local, ...remote, id: local?.id || remote.calendarEventId, syncState: 'synced' };
+      add(ticketNumber, appointment);
     });
 
     Object.keys(merged).forEach(ticketNumber => {
@@ -73,18 +76,36 @@
     if (appointment.calendarEventId) {
       try {
         await CalendarApi.updateEvent(settings, appointment.calendarEventId, appointmentAt, durationMinutes, ticketNumber);
+        appointment.syncState = 'synced';
         return 'Cita guardada y evento actualizado en Google Calendar.';
       } catch (error) {
         // El evento guardado ya no existe en el calendario de destino (borrado o creado en otro calendario).
         if (error.status !== 404) throw error;
-        appointment.calendarEventId = await CalendarApi.createEvent(settings, appointmentAt, ticketNumber, durationMinutes);
+        appointment.calendarEventId = await CalendarApi.createEvent(settings, appointmentAt, ticketNumber, durationMinutes, appointment.id);
+        appointment.syncState = 'synced';
         return 'El evento anterior no existía en el calendario; se ha creado uno nuevo.';
       }
     }
 
-    appointment.calendarEventId = await CalendarApi.createEvent(settings, appointmentAt, ticketNumber, durationMinutes);
+    appointment.calendarEventId = await CalendarApi.createEvent(settings, appointmentAt, ticketNumber, durationMinutes, appointment.id);
+    appointment.syncState = 'synced';
     return 'Cita guardada y evento creado en Google Calendar.';
   }
 
-  extension.CalendarSync = Object.freeze({ loadLabels, deleteEvent, pushAppointment });
+  async function syncPending(settings, labels) {
+    const failures = [];
+    for (const [ticketNumber, appointments] of Object.entries(labels)) {
+      for (const appointment of appointments) {
+        if (settings.mode !== 'api' || appointment.syncState !== 'pending') continue;
+        try {
+          await pushAppointment(settings, appointment, ticketNumber, appointment);
+        } catch (error) {
+          failures.push({ ticketNumber, appointment, error });
+        }
+      }
+    }
+    return failures;
+  }
+
+  extension.CalendarSync = Object.freeze({ loadLabels, deleteEvent, pushAppointment, syncPending });
 })(globalThis);

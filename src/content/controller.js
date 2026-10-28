@@ -1,7 +1,11 @@
 (function (global) {
   async function refreshLabels() {
-    const { ticketLabels = {} } = await browser.storage.local.get('ticketLabels');
-    global.FaveoLabels.TicketLabels.render(global.FaveoLabels.Core.normalizeLabels(ticketLabels));
+    try {
+      const result = await browser.runtime.sendMessage({ type: 'get-ticket-labels' });
+      global.FaveoLabels.TicketLabels.render(result?.ticketLabels || {});
+    } catch (error) {
+      console.error('No se pudieron actualizar las etiquetas de Faveo:', error);
+    }
   }
 
   function observeTicketList() {
@@ -26,7 +30,7 @@
   }
 
   browser.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local' && changes.ticketLabels) void refreshLabels();
+    if (areaName === 'local' && (changes.ticketLabels || changes.ticketLabelsEncrypted)) void refreshLabels();
   });
 
   registerMessages();

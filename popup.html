@@ -5,14 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>faveo-ticket-labels</title>
   <link rel="stylesheet" href="src/popup/popup.css">
+  <link rel="stylesheet" href="src/shared/confirm-dialog.css">
 </head>
 <body>
-    <main>
+    <main id="locked-view" hidden>
+      <form id="unlock-form">
+        <h1>Desbloquear citas</h1>
+        <p id="unlock-status" class="availability-status" role="status" aria-live="polite">Introduce la contraseña maestra para mostrar las citas y acceder al popup.</p>
+        <label for="unlock-password">Contraseña maestra</label>
+        <input id="unlock-password" type="password" autocomplete="off" required>
+        <button type="submit">Desbloquear</button>
+      </form>
+    </main>
+
+    <main id="setup-view" hidden>
+      <form id="setup-form">
+        <h1>Primeros pasos</h1>
+        <p class="availability-status">Antes de guardar citas debes crear una contraseña maestra en Preferencias. Con ella se cifran las citas y, si los usas, los datos de Google Calendar.</p>
+        <button type="submit">Abrir preferencias</button>
+      </form>
+    </main>
+
+    <main id="app-view" hidden>
       <header>
         <div>
           <p class="eyebrow">FAVEO HELPDESK</p>
           <h1>Mis etiquetas</h1>
         </div>
+        <button id="logout-button" class="text-button" type="button">Cerrar sesión</button>
         <button id="gear-button" class="icon-button" type="button" title="Preferencias" aria-label="Abrir preferencias">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <circle cx="12" cy="12" r="3" />
@@ -20,13 +40,6 @@
           </svg>
         </button>
       </header>
-
-    <form id="unlock-form" hidden>
-      <label for="unlock-password">Contraseña maestra</label>
-      <input id="unlock-password" type="password" autocomplete="off" required>
-      <p id="unlock-status" class="availability-status" role="status" aria-live="polite">Las credenciales de Google están cifradas. Desbloquéalas para consultar y crear eventos en el calendario.</p>
-      <button type="submit">Desbloquear</button>
-    </form>
 
     <form id="label-form">
       <label for="ticket-number">Número de ticket</label>
@@ -53,11 +66,7 @@
 
       <div class="slot-heading">
         <label for="duration-select">Duración</label>
-        <select id="duration-select" name="duration">
-          <option value="15" selected>15 min</option>
-          <option value="30">30 min</option>
-          <option value="60">1 h</option>
-        </select>
+        <select id="duration-select" name="duration"></select>
       </div>
       <p id="availability-status" class="availability-status" role="status" aria-live="polite">Selecciona una fecha para consultar disponibilidad.</p>
       <div id="time-slots" class="time-slots" aria-label="Franjas horarias disponibles"></div>
@@ -77,7 +86,9 @@
     </section>
   </main>
   <script src="src/shared/core.js"></script>
+  <script src="src/shared/confirm-dialog.js"></script>
   <script src="src/shared/secure-store.js"></script>
+  <script src="src/shared/master-password.js"></script>
   <script src="src/shared/calendar-api.js"></script>
   <script src="src/popup/calendar-sync.js"></script>
   <script src="src/popup/ticket-reader.js"></script>

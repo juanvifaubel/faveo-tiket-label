@@ -18,6 +18,12 @@
   });
 
   browser.runtime.onStartup.addListener(() => void registerContentScripts());
-  browser.runtime.onInstalled.addListener(() => void registerContentScripts());
+  browser.runtime.onInstalled.addListener(details => {
+    void registerContentScripts();
+    // Primera instalación: lleva al usuario a crear la contraseña maestra.
+    if (details.reason === 'install') {
+      void browser.tabs.create({ url: browser.runtime.getURL('preferences.html#seguridad') });
+    }
+  });
   void registerContentScripts();
 })();

@@ -4,9 +4,16 @@
 # Identificador local usado durante la publicación en AMO
 /.amo-upload-uuid
 
+# Local publishing credentials (never commit)
+/.env
+/.env.*
+!/.env.example
+/.web-ext-keys.json
+
 # Archivos del sistema operativo
 .DS_Store
 Thumbs.db
 
 # Otros
 PORTFOLIO.md
+/__miscelaneos

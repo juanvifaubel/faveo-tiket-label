@@ -3,6 +3,12 @@
   const Core = extension.Core;
   const calendarsUrl = 'https://www.googleapis.com/calendar/v3';
   const tokenUrl = 'https://oauth2.googleapis.com/token';
+  let serverTimeOffset = null;
+
+  function updateServerClock(response) {
+    const serverTime = Date.parse(response.headers.get('Date') || '');
+    if (!Number.isNaN(serverTime)) serverTimeOffset = serverTime - Date.now();
+  }
 
   function buildRequestError(status, message) {
     const error = new Error(message || `Google Calendar respondió con HTTP ${status}.`);
@@ -26,6 +32,7 @@
         grant_type: 'refresh_token'
       }).toString()
     });
+    updateServerClock(response);
     const renewalError = `No se pudo renovar el Access token (HTTP ${response.status}).`;
 
     let tokenResponse;
@@ -70,9 +77,9 @@
     return `Google Calendar respondió con HTTP ${response.status}.`;
   }
 
-  async function request(settings, method, eventId = '', body, query = {}) {
+  async function request(settings, method, eventId = '', body, query = {}, accessTokenOverride = '') {
     const calendarId = getCalendarId(settings);
-    const accessToken = await getAccessToken(settings);
+    const accessToken = accessTokenOverride || await getAccessToken(settings);
     const url = buildEventsUrl(calendarId, eventId, query);
     const response = await fetch(url, {
       method,
@@ -82,6 +89,7 @@
       },
       body: body ? JSON.stringify(body) : undefined
     });
+    updateServerClock(response);
 
     if (response.status === 204) return null;
     if (method === 'DELETE' && response.status === 404) return null;
@@ -102,7 +110,7 @@
     return { start, end };
   }
 
-  async function listEventsBetween(settings, timeMin, timeMax) {
+  async function listEventsBetween(settings, timeMin, timeMax, accessToken = '') {
     const events = [];
     let pageToken = '';
 
@@ -115,7 +123,7 @@
         maxResults: '2500'
       };
       if (pageToken) query.pageToken = pageToken;
-      const result = await request(settings, 'GET', '', null, query);
+      const result = await request(settings, 'GET', '', null, query, accessToken);
       events.push(...(result.items || []));
       pageToken = result.nextPageToken || '';
     } while (pageToken);
@@ -131,11 +139,13 @@
 
   // Reconstruye las citas a partir de los eventos del calendario de destino.
   // Devuelve una lista plana: un ticket puede tener varios eventos.
-  async function listTicketAppointments(settings, daysAhead = 90) {
-    const today = new Date();
-    const from = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const to = new Date(from.getFullYear(), from.getMonth(), from.getDate() + daysAhead);
-    const events = await listEventsBetween(settings, from, to);
+  // Incluye 30 días atrás para recuperar también las citas recientes ya pasadas.
+  async function listTicketAppointments(settings, daysAhead = 90, daysBack = 30) {
+    const accessToken = await getAccessToken(settings);
+    const today = getNow();
+    const from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysBack);
+    const to = new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysAhead);
+    const events = await listEventsBetween(settings, from, to, accessToken);
     const appointments = [];
 
     events.forEach(event => {
@@ -165,6 +175,10 @@
     });
   }
 
+  function getNow() {
+    return new Date(Date.now() + (serverTimeOffset ?? 0));
+  }
+
   // --- Escritura de eventos ---
 
   function getEventTimes(appointmentAt, durationMinutes) {
@@ -176,11 +190,31 @@
     };
   }
 
-  async function createEvent(settings, appointmentAt, ticketNumber, durationMinutes) {
-    const event = await request(settings, 'POST', '', {
+  async function getStableEventId(appointmentId) {
+    const identity = String(appointmentId || crypto.randomUUID());
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(identity));
+    const hex = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    return `a${hex}`;
+  }
+
+  async function createEvent(settings, appointmentAt, ticketNumber, durationMinutes, appointmentId) {
+    const eventId = await getStableEventId(appointmentId);
+    const eventBody = {
       ...Core.getEventDetails(ticketNumber, settings.faveoUrl, settings.ticketPath),
-      ...getEventTimes(appointmentAt, durationMinutes)
-    });
+      ...getEventTimes(appointmentAt, durationMinutes),
+      id: eventId,
+      extendedProperties: { private: { faveoTicketLabelId: String(appointmentId || '') } }
+    };
+    let event;
+    try {
+      event = await request(settings, 'POST', '', eventBody);
+    } catch (error) {
+      if (error.status !== 409) throw error;
+      event = await request(settings, 'GET', eventId);
+      if (event.extendedProperties?.private?.faveoTicketLabelId !== String(appointmentId || '')) {
+        throw new Error('Ya existe un evento con el identificador de esta cita, pero no se pudo confirmar que sea el correcto.');
+      }
+    }
     if (!event?.id) throw new Error('Google creó el evento, pero no devolvió su identificador.');
     return event.id;
   }
@@ -209,6 +243,7 @@
     listEventsForDay,
     listTicketAppointments,
     hasOverlap,
+    getNow,
     createEvent,
     updateEvent,
     deleteEvent

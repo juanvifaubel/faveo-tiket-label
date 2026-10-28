@@ -6,7 +6,7 @@
   const SECRETS_KEY = 'calendarSecrets';
   const SESSION_KEY = 'calendarSecretsKey';
   const PBKDF2_ITERATIONS = 600000;
-  const MIN_PASSWORD_LENGTH = 8;
+  const MIN_PASSWORD_LENGTH = 12;
 
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
@@ -14,7 +14,12 @@
   // --- Conversión binario <-> texto ---
 
   function toBase64(bytes) {
-    return btoa(String.fromCharCode(...new Uint8Array(bytes)));
+    const data = new Uint8Array(bytes);
+    let binary = '';
+    for (let index = 0; index < data.length; index += 0x8000) {
+      binary += String.fromCharCode(...data.subarray(index, index + 0x8000));
+    }
+    return btoa(binary);
   }
 
   function fromBase64(text) {
@@ -98,6 +103,23 @@
     await rememberKey(key);
   }
 
+  async function rotate(password, credentials, appointmentData) {
+    if (String(password || '').length < MIN_PASSWORD_LENGTH) {
+      throw new Error(`La contraseña maestra debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`);
+    }
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await deriveKey(password, salt);
+    const secrets = await encrypt(key, pickCredentials(credentials));
+    const values = {
+      [SECRETS_KEY]: { salt: toBase64(salt), ...secrets }
+    };
+    if (appointmentData !== undefined) {
+      values.ticketLabelsEncrypted = { version: 1, ...await encrypt(key, appointmentData) };
+    }
+    await browser.storage.local.set(values);
+    await rememberKey(key);
+  }
+
   // Vuelve a cifrar reutilizando la clave de la sesión, sin pedir la contraseña.
   async function saveUnlocked(credentials) {
     const [secrets, rawKey] = await Promise.all([getSecrets(), getSessionKey()]);
@@ -132,5 +154,35 @@
     }
   }
 
-  extension.SecureStore = { MIN_PASSWORD_LENGTH, hasSecrets, isUnlocked, save, saveUnlocked, unlock, load };
+  async function lock() {
+    await browser.storage.session.remove(SESSION_KEY);
+  }
+
+  async function encryptData(value) {
+    const rawKey = await getSessionKey();
+    if (!rawKey) throw new Error('Las credenciales están bloqueadas. Introduce la contraseña maestra.');
+    const encrypted = await encrypt(await importKey(rawKey), value);
+    return { version: 1, ...encrypted };
+  }
+
+  async function decryptData(value) {
+    const rawKey = await getSessionKey();
+    if (!rawKey) throw new Error('Las credenciales están bloqueadas. Introduce la contraseña maestra.');
+    if (value?.version !== 1) throw new Error('El formato de las citas cifradas no es válido.');
+    return decrypt(await importKey(rawKey), value);
+  }
+
+  extension.SecureStore = {
+    MIN_PASSWORD_LENGTH,
+    hasSecrets,
+    isUnlocked,
+    save,
+    rotate,
+    saveUnlocked,
+    unlock,
+    load,
+    lock,
+    encryptData,
+    decryptData
+  };
 })(globalThis);

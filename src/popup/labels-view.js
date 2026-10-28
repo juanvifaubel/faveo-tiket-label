@@ -21,7 +21,9 @@
       const ticket = document.createElement('strong');
       ticket.textContent = ticketNumber;
       const when = document.createElement('small');
-      when.textContent = `Cita: ${extension.Core.formatAppointment(appointment.appointmentAt)}`;
+      const duration = appointment.durationMinutes || 15;
+      const syncStatus = appointment.syncState === 'pending' ? ' · Pendiente de sincronizar' : '';
+      when.textContent = `Cita: ${extension.Core.formatAppointment(appointment.appointmentAt)} · ${duration} min${syncStatus}`;
       const details = document.createElement('div');
       details.append(ticket, when);
 

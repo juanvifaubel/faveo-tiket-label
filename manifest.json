@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "faveo-ticket-labels",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "browser_specific_settings": {
     "gecko": {
       "id": "faveo-ticket-labels@juanvifaubel",
@@ -29,12 +29,15 @@
   },
   "host_permissions": ["https://www.googleapis.com/*", "https://oauth2.googleapis.com/*"],
   "optional_host_permissions": ["https://*/*", "http://*/*"],
-  "permissions": ["storage", "scripting"],
+  "permissions": ["storage", "scripting", "alarms", "notifications"],
   "background": {
     "scripts": [
       "src/shared/core.js",
+      "src/shared/secure-store.js",
       "src/shared/content-registration.js",
+      "src/background/labels-provider.js",
       "src/background/register-content.js",
+      "src/background/network-monitor.js",
       "src/background/badge.js"
     ]
   }
