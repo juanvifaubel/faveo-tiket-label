@@ -1,18 +1,18 @@
 {
   "summary": {
-    "es": "Vincula citas de Google Calendar con tickets de Faveo Helpdesk."
+    "es-ES": "Vincula citas de Google Calendar con tickets de Faveo Helpdesk."
   },
   "description": {
-    "es": "Crea y consulta citas asociadas a tickets de Faveo Helpdesk. Muestra la proxima cita junto a cada ticket y permite sincronizarla con Google Calendar mediante una pestana o la API de Google Calendar.\n\nLos datos se guardan en el perfil de Firefox. Las citas y las credenciales de Google se cifran localmente con una contrasena maestra."
+    "es-ES": "Crea y consulta citas asociadas a tickets de Faveo Helpdesk. Muestra la proxima cita junto a cada ticket y permite sincronizarla con Google Calendar mediante una pestana o la API de Google Calendar.\n\nLos datos se guardan en el perfil de Firefox. Las citas y las credenciales de Google se cifran localmente con una contrasena maestra."
   },
   "categories": [
-    "productivity"
+    "other"
   ],
   "homepage": {
-    "es": "https://github.com/juanvifaubel/faveo-tiket-label"
+    "es-ES": "https://github.com/juanvifaubel/faveo-tiket-label"
   },
   "support_url": {
-    "es": "https://github.com/juanvifaubel/faveo-tiket-label/issues"
+    "es-ES": "https://github.com/juanvifaubel/faveo-tiket-label/issues"
   },
   "version": {
     "license": "REPLACE_WITH_YOUR_CHOSEN_LICENSE",
