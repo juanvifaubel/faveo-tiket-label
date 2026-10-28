@@ -15,7 +15,7 @@
     "es-ES": "https://github.com/juanvifaubel/faveo-tiket-label/issues"
   },
   "version": {
-    "license": "REPLACE_WITH_YOUR_CHOSEN_LICENSE",
+    "license": "MPL-2.0",
     "approval_notes": "The extension requests optional access to the Faveo origin configured by the user. The permission is requested following an explicit user action and is used only to inject ticket labels. Google requests occur only if the user selects API mode and provides their own OAuth credentials."
   }
 }

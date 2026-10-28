@@ -4,7 +4,7 @@ The extension is prepared for the **listed** Firefox Add-ons (AMO) channel. Its 
 
 ## Before signing
 
-1. Choose the project's license and replace `REPLACE_WITH_YOUR_CHOSEN_LICENSE` in `amo-metadata.json` with an AMO-accepted identifier (for example, `MPL-2.0`). This legal choice has deliberately not been assumed or published.
+1. The project is published under the Mozilla Public License 2.0 (`MPL-2.0`), declared in `amo-metadata.json` for AMO.
 2. Review `amo-metadata.json`. AMO requires full locale codes, so the Spanish listing uses `es-ES`; its closest accepted Firefox category is `other`.
 3. Create AMO API credentials (JWT issuer and JWT secret). Keep them only in the PowerShell session; never commit them or save them in a tracked file.
 4. For a fuller listing, upload screenshots from the Developer Hub after the first submission. They are not required to create a listing through `web-ext sign`.
