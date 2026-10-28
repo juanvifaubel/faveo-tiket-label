@@ -1,6 +1,6 @@
 # Publish Faveo Ticket Labels on AMO
 
-The extension is prepared for the **listed** Firefox Add-ons (AMO) channel. Its release version is `1.1.0` and its stable identifier is `faveo-ticket-labels@juanvifaubel`.
+The extension is prepared for the **listed** Firefox Add-ons (AMO) channel. Its release version is `1.2.0` and its stable identifier is `faveo-ticket-labels@juanvifaubel`.
 
 ## Before signing
 
@@ -16,7 +16,7 @@ npm run lint
 npm run build
 ```
 
-The resulting package is `web-ext-artifacts/faveo-ticket-labels-1.1.0.zip`. It is a local artifact ignored by Git.
+The resulting package is `web-ext-artifacts/faveo-ticket-labels-1.2.0.zip`. It is a local artifact ignored by Git.
 
 ## Submit as a listed extension
 
@@ -29,6 +29,6 @@ npx --yes web-ext@10.5.0 sign --source-dir . --channel listed --amo-metadata amo
 Remove-Item Env:WEB_EXT_API_KEY, Env:WEB_EXT_API_SECRET
 ```
 
-`--channel listed` creates the public AMO listing if it does not exist, and submits version `1.1.0` for review. The command does not place the credentials in shell history. Keep the same `gecko.id` for future updates.
+`--channel listed` creates the public AMO listing if it does not exist, and submits version `1.2.0` for review. The command does not place the credentials in shell history. Keep the same `gecko.id` for future updates.
 
 AMO controls signing and review; the listing does not become public until AMO approves it.

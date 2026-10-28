@@ -2,6 +2,6 @@
   "private": true,
   "scripts": {
     "lint": "npx --yes web-ext@10.5.0 lint --source-dir . --warnings-as-errors",
-    "build": "npx --yes web-ext@10.5.0 build --source-dir . --artifacts-dir web-ext-artifacts --filename faveo-ticket-labels-1.1.0.zip --overwrite-dest --ignore-files README.md PUBLICAR_EN_AMO.md PORTFOLIO.md amo-metadata.json package.json __miscelaneos **/__miscelaneos/**"
+    "build": "npx --yes web-ext@10.5.0 build --source-dir . --artifacts-dir web-ext-artifacts --filename faveo-ticket-labels-1.2.0.zip --overwrite-dest --ignore-files README.md PUBLICAR_EN_AMO.md PORTFOLIO.md amo-metadata.json package.json __miscelaneos **/__miscelaneos/**"
   }
 }
